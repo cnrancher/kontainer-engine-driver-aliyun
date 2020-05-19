@@ -1,36 +1,51 @@
 ---
-pipeline:
-  build:
-    privileged: true
-    image: rancher/dapper:1.11.2
-    volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
-    commands:
-    - dapper ci
+kind: pipeline
 
-  github-binary-publish-release:
-    image: plugins/github-release
-    files:
-     - bin/kontainer-engine-driver-aliyun-*
+steps:
+- name: build
+  privileged: true
+  image: rancher/dapper:1.11.2
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  commands:
+  - dapper ci
+
+- name: github-binary-publish-release
+  image: plugins/github-release
+  settings:
+    api_key:
+      from_secret: github_token
     checksum:
-     - sha256
-    secrets: [github_token]
-    when:
-      branch: master
-      event: tag
-      ref:
-        exclude: [ refs/tags/*rc* ]
+    - sha256
+    files:
+    - "bin/kontainer-engine-driver-aliyun-*"
+  when:
+    branch: master
+    event: tag
+    ref:
+      exclude: [ refs/tags/*rc* ]
 
-  github-binary-publish-prerelease:
-    image: plugins/github-release
+- name: github-binary-publish-prerelease
+  image: plugins/github-release
+  settings:
+    api_key:
+      from_secret: github_token
+    checksum:
+    - sha256
+    files:
+    - "bin/kontainer-engine-driver-aliyun-*"
     prerelease: true
-    files:
-     - bin/kontainer-engine-driver-aliyun-*
-    checksum:
-     - sha256
-    secrets: [github_token]
-    when:
-      branch: master
-      event: tag
-      ref:
-        include: [ refs/tags/*rc* ]
+  when:
+    branch: master
+    event: tag
+    ref:
+      include: [ refs/tags/*rc* ]
+
+volumes:
+- name: docker
+  host:
+    path: /var/run/docker.sock
+
+node:
+  instance: agent-amd64
