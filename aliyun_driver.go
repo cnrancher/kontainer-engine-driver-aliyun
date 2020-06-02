@@ -810,13 +810,11 @@ func (d *Driver) Remove(ctx context.Context, info *types.ClusterInfo) error {
 	}
 
 	logrus.Debugf("Removing cluster %v from region %v, zone %v", state.Name, state.RegionID, state.ZoneID)
-	if err := deleteCluster(svc, state); err != nil && !strings.Contains(err.Error(), "NotFound") {
+	if err := deleteCluster(svc, state); err != nil {
+		logrus.Debugf("Cluster %v delete failed:%s.", state.Name, err.Error())
 		return err
-	} else if err == nil {
-		logrus.Debugf("Cluster %v delete is called.", state.Name)
-	} else {
-		logrus.Debugf("Cluster %s doesn't exist", state.Name)
 	}
+	logrus.Debugf("Cluster %v delete is called.", state.Name)
 	return nil
 }
 
