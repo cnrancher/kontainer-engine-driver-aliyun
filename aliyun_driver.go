@@ -31,7 +31,7 @@ const (
 	failedStatus       = "failed"
 	retries            = 5
 	pollInterval       = 30
-	defaultTimeoutMins = 30
+	defaultTimeoutMins = 60
 )
 
 var EnvMutex sync.Mutex
